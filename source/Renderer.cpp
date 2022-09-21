@@ -27,15 +27,24 @@ void Renderer::Render(Scene* pScene) const
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
 
+	//For each pixel
 	for (int px{}; px < m_Width; ++px)
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-			float gradient = px / static_cast<float>(m_Width);
-			gradient += py / static_cast<float>(m_Width);
-			gradient /= 2.0f;
+			//Calculate center of pixel in raster space
+			float pxc{ px + 0.5f };
+			float pyc{ py + 0.5f };
 
-			ColorRGB finalColor{ gradient, gradient, gradient };
+			//Convert coordinate from raster space to camera space
+			float cx{ (((2 * pxc) / m_Width) - 1.f) * ((float)m_Width / (float)m_Height) };
+			float cy{ 1.f - ((2.f * pyc) / float(m_Height)) };
+
+			//Convert camera space to world space
+			auto rayDirection = Vector3::Lico(cx, Vector3::UnitX, cy, Vector3::UnitY, 1, Vector3::UnitZ).Normalized();
+
+			//Color to write to the color buffer
+			ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z };
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
