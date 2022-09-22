@@ -12,9 +12,38 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
-			assert(false && "No Implemented Yet!");
-			return false;
+			//Variables for quadratic equation
+			float a{ ray.direction.SqrMagnitude() };
+			float b{ Vector3::Dot(2.f * ray.direction, ray.origin - sphere.origin) };
+			float c{ (ray.origin - sphere.origin).SqrMagnitude() - Square(sphere.radius)};
+
+			//Return false if ray does not intersect (discriminant needs to be larger than 0)
+			float discriminant{ Square(b) - 4 * a * c };
+			if (discriminant <= 0) return false;
+
+			//Set discrimant as the square root of itself (prevents having to calculate it multiple times)
+			discriminant = sqrtf(discriminant);
+
+			//Calculate smaller t value
+			hitRecord.t = (-b - discriminant) / (2.f * a);
+			if (hitRecord.t < ray.min)
+			{
+				//Calculate higher t value if t is outside interval
+				hitRecord.t = (-b + discriminant) / (2.f * a);
+
+				//Return false if t is still outside interval
+				if (hitRecord.t < ray.min)
+				{
+					hitRecord.t = FLT_MAX;
+					return false;
+				}
+			}
+
+			//Set hit values and return true
+			hitRecord.origin = ray.origin;
+			hitRecord.normal = ray.direction;
+			hitRecord.materialIndex = sphere.materialIndex;
+			return hitRecord.didHit = true;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
