@@ -43,8 +43,21 @@ void Renderer::Render(Scene* pScene) const
 			//Convert camera space to world space
 			auto rayDirection = Vector3::Lico(cx, Vector3::UnitX, cy, Vector3::UnitY, 1, Vector3::UnitZ).Normalized();
 
+			//Ray we are casting from the camera towards each pixel
+			Ray viewRay{ {0,0,0}, rayDirection };
+
 			//Color to write to the color buffer
-			ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z };
+			ColorRGB finalColor{};
+
+			//HitRecord containing more information about a potential hit
+			HitRecord closestHit{};
+			pScene->GetClosestHit(viewRay, closestHit);
+
+			if (closestHit.didHit)
+			{
+				//If we hit something, set finalColor to material color
+				finalColor = materials[closestHit.materialIndex]->Shade();
+			}
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
