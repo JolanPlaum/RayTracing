@@ -39,6 +39,15 @@ namespace dae {
 			//Update closest hit if new hit is closer
 			if (hitRecord.t < closestHit.t) closestHit = hitRecord;
 		}
+
+		for (auto& plane : m_PlaneGeometries)
+		{
+			//Perform Plane HitTest
+			GeometryUtils::HitTest_Plane(plane, ray, hitRecord);
+
+			//Update closest hit if new hit is closer
+			if (hitRecord.t < closestHit.t) closestHit = hitRecord;
+		}
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const
