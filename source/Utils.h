@@ -56,9 +56,25 @@ namespace dae
 		//PLANE HIT-TESTS
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
-			assert(false && "No Implemented Yet!");
-			return false;
+			//Return false if ray does not intersect (when ray direction and plane normal are perpendicular)
+			float dotProduct{ Vector3::Dot(ray.direction, plane.normal) };
+			if (dotProduct == 0.f) return false;
+
+			//Calculate at which interval t the ray intersects
+			hitRecord.t = Vector3::Dot(plane.origin - ray.origin, plane.normal) / dotProduct;
+
+			//Return false if t is outside ray interval
+			if (hitRecord.t < ray.min)
+			{
+				hitRecord.t = FLT_MAX;
+				return false;
+			}
+
+			//Set hit values and return true
+			hitRecord.origin = ray.origin;
+			hitRecord.normal = ray.direction;
+			hitRecord.materialIndex = plane.materialIndex;
+			return hitRecord.didHit = true;
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
