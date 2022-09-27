@@ -18,20 +18,20 @@ namespace dae
 			float c{ (ray.origin - sphere.origin).SqrMagnitude() - Square(sphere.radius)};
 
 			//Return false if ray does not intersect (discriminant needs to be larger than 0)
-			float discriminant{ Square(b) - 4 * a * c };
-			if (discriminant <= 0) return false;
+			float discriminant{ Square(b) - 4.f * a * c };
+			if (discriminant <= 0.f) return false;
 
 			//Set discrimant as the square root of itself (prevents having to calculate it multiple times)
 			discriminant = sqrtf(discriminant);
 
-			//Calculate smaller t value
+			//Calculate smaller interval t at which the ray intersects
 			hitRecord.t = (-b - discriminant) / (2.f * a);
 			if (hitRecord.t < ray.min)
 			{
-				//Calculate higher t value if t is outside interval
+				//Calculate higher interval t if t is outside ray interval
 				hitRecord.t = (-b + discriminant) / (2.f * a);
 
-				//Return false if t is still outside interval
+				//Return false if t is still outside ray interval
 				if (hitRecord.t < ray.min)
 				{
 					hitRecord.t = FLT_MAX;
