@@ -41,10 +41,10 @@ void Renderer::Render(Scene* pScene) const
 			float cy{ 1.f - ((2.f * pyc) / float(m_Height)) };
 
 			//Convert camera space to world space
-			auto rayDirection = Vector3::Lico(cx, Vector3::UnitX, cy, Vector3::UnitY, 1, Vector3::UnitZ).Normalized();
+			auto rayDirection = Vector3::Lico(cx, camera.right, cy, camera.up, 1, camera.forward).Normalized();
 
 			//Ray we are casting from the camera towards each pixel
-			Ray viewRay{ {0,0,0}, rayDirection };
+			Ray viewRay{ camera.origin, rayDirection };
 
 			//Color to write to the color buffer
 			ColorRGB finalColor{};
