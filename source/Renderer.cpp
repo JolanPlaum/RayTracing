@@ -37,8 +37,8 @@ void Renderer::Render(Scene* pScene) const
 			float pyc{ py + 0.5f };
 
 			//Convert coordinate from raster space to camera space
-			float cx{ (((2 * pxc) / m_Width) - 1.f) * ((float)m_Width / (float)m_Height) };
-			float cy{ 1.f - ((2.f * pyc) / float(m_Height)) };
+			float cx{ (((2 * pxc) / m_Width) - 1.f) * ((float)m_Width / (float)m_Height) * camera.fov };
+			float cy{ (1.f - ((2.f * pyc) / float(m_Height))) * camera.fov };
 
 			//Convert camera space to world space
 			auto rayDirection = Vector3::Lico(cx, camera.right, cy, camera.up, 1, camera.forward).Normalized();

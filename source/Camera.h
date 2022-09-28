@@ -14,13 +14,15 @@ namespace dae
 
 		Camera(const Vector3& _origin, float _fovAngle):
 			origin{_origin},
-			fovAngle{_fovAngle}
+			fovAngle{_fovAngle},
+			fov{tanf(_fovAngle / 2.f * TO_RADIANS)}
 		{
 		}
 
 
 		Vector3 origin{};
 		float fovAngle{90.f};
+		float fov{1.f};
 
 		Vector3 forward{Vector3::UnitZ};
 		Vector3 up{Vector3::UnitY};
