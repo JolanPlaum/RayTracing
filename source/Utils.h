@@ -40,8 +40,8 @@ namespace dae
 			}
 
 			//Set hit values and return true
-			hitRecord.origin = ray.origin;
-			hitRecord.normal = ray.direction;
+			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
+			hitRecord.normal = hitRecord.origin - sphere.origin;
 			hitRecord.materialIndex = sphere.materialIndex;
 			return hitRecord.didHit = true;
 		}
@@ -71,8 +71,8 @@ namespace dae
 			}
 
 			//Set hit values and return true
-			hitRecord.origin = ray.origin;
-			hitRecord.normal = ray.direction;
+			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
+			hitRecord.normal = plane.normal;
 			hitRecord.materialIndex = plane.materialIndex;
 			return hitRecord.didHit = true;
 		}
