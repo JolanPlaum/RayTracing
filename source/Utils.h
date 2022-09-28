@@ -39,9 +39,16 @@ namespace dae
 				}
 			}
 
+			//Return false if t is outside ray interval
+			if (hitRecord.t > ray.max)
+			{
+				hitRecord.t = FLT_MAX;
+				return false;
+			}
+
 			//Set hit values and return true
 			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
-			hitRecord.normal = hitRecord.origin - sphere.origin;
+			hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 			hitRecord.materialIndex = sphere.materialIndex;
 			return hitRecord.didHit = true;
 		}
@@ -64,7 +71,7 @@ namespace dae
 			hitRecord.t = Vector3::Dot(plane.origin - ray.origin, plane.normal) / dotProduct;
 
 			//Return false if t is outside ray interval
-			if (hitRecord.t < ray.min)
+			if (hitRecord.t < ray.min || hitRecord.t > ray.max)
 			{
 				hitRecord.t = FLT_MAX;
 				return false;
