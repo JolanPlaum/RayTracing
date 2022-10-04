@@ -26,24 +26,17 @@ namespace dae
 
 			//Calculate smaller interval t at which the ray intersects
 			hitRecord.t = (-b - discriminant) / (2.f * a);
-			if (hitRecord.t < ray.min)
+			if (hitRecord.t < ray.min || hitRecord.t > ray.max)
 			{
 				//Calculate higher interval t if t is outside ray interval
 				hitRecord.t = (-b + discriminant) / (2.f * a);
 
 				//Return false if t is still outside ray interval
-				if (hitRecord.t < ray.min)
+				if (hitRecord.t < ray.min || hitRecord.t > ray.max)
 				{
 					hitRecord.t = FLT_MAX;
 					return false;
 				}
-			}
-
-			//Return false if t is outside ray interval
-			if (hitRecord.t > ray.max)
-			{
-				hitRecord.t = FLT_MAX;
-				return false;
 			}
 
 			//Set hit values and return true
@@ -126,6 +119,10 @@ namespace dae
 		//Direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
+			if (light.type == LightType::Directional)
+			{
+				return -light.direction;
+			}
 			return light.origin - origin;
 		}
 
