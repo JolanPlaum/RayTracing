@@ -27,6 +27,8 @@ void Renderer::Render(Scene* pScene) const
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
 
+	//const Matrix cameraToWorld = camera.CalculateCameraToWorld();
+
 	//For each pixel
 	for (int px{}; px < m_Width; ++px)
 	{
@@ -41,9 +43,9 @@ void Renderer::Render(Scene* pScene) const
 			float cy{ (1.f - ((2.f * pyc) / float(m_Height))) * camera.fov };
 
 			//Convert camera space to world space
-			auto rayDirection = Vector3::Lico(cx, camera.right, cy, camera.up, 1, camera.forward).Normalized();
 			//auto rayDirection = Vector3::Lico(cx, camera.right, cy, camera.up, 1.f, camera.forward).Normalized(); //average of 33.0 fps
 			//auto rayDirection = cameraToWorld.TransformVector(cx, cy, 1.f).Normalized(); //average of 32.9 fps
+			auto rayDirection = (cx * camera.right + cy * camera.up + camera.forward); //average of 36.2 fps
 
 			//Ray we are casting from the camera towards each pixel
 			Ray viewRay{ camera.origin, rayDirection };
@@ -59,6 +61,17 @@ void Renderer::Render(Scene* pScene) const
 			{
 				//If we hit something, set finalColor to material color
 				finalColor = materials[closestHit.materialIndex]->Shade();
+
+				for (const Light& light : lights)
+				{
+					Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
+					float distance = invLightDirection.Normalize();
+					Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };
+
+					if (pScene->DoesHit(invLightRay))
+					{
+						finalColor *= 0.5f;
+					}
 					//else
 					//{
 					//	finalColor = ColorRGB::Lerp(finalColor, light.color, 0.4f);
