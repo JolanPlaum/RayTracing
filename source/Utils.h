@@ -12,6 +12,35 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
+			/*
+			*/
+			Vector3 tc = sphere.origin - ray.origin;
+			float dp = Vector3::Dot(tc, ray.direction);
+			float odSquare = tc.SqrMagnitude() - (dp * dp);
+			float tca = (sphere.radius * sphere.radius) - odSquare;
+			if (tca < 0.f) return false;
+			tca = sqrtf(tca);
+			hitRecord.t = dp - tca;
+
+			if (hitRecord.t < ray.min || hitRecord.t > ray.max)
+			{
+				//Calculate higher interval t if t is outside ray interval
+				hitRecord.t = dp + tca;
+
+				//Return false if t is still outside ray interval
+				if (hitRecord.t < ray.min || hitRecord.t > ray.max)
+				{
+					hitRecord.t = FLT_MAX;
+					return false;
+				}
+			}
+
+			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
+			hitRecord.normal = hitRecord.origin - sphere.origin;
+			hitRecord.materialIndex = sphere.materialIndex;
+			return hitRecord.didHit = true;
+
+			/*
 			//Variables for quadratic equation
 			float a{ ray.direction.SqrMagnitude() };
 			float b{ Vector3::Dot(2.f * ray.direction, ray.origin - sphere.origin) };
@@ -44,6 +73,7 @@ namespace dae
 			hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 			hitRecord.materialIndex = sphere.materialIndex;
 			return hitRecord.didHit = true;
+			*/
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
