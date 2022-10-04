@@ -33,6 +33,9 @@ namespace dae
 
 		Matrix cameraToWorld{};
 
+		const float movementSpeed{ 10.f };
+		const float rotationSpeed{ .5f };
+
 
 		Matrix CalculateCameraToWorld()
 		{
@@ -60,8 +63,28 @@ namespace dae
 			int mouseX{}, mouseY{};
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
-			//todo: W2
-			//assert(false && "Not Implemented Yet");
+
+			//Camera Movement/Rotation
+			float moveSpeed{ movementSpeed * deltaTime * (pKeyboardState[SDL_SCANCODE_LSHIFT] * 3 + 1) };
+			float rotSpeed{ rotationSpeed * deltaTime };
+
+			origin += pKeyboardState[SDL_SCANCODE_W] * forward * moveSpeed;
+			origin -= pKeyboardState[SDL_SCANCODE_S] * forward * moveSpeed;
+			origin += pKeyboardState[SDL_SCANCODE_D] * right * moveSpeed;
+			origin -= pKeyboardState[SDL_SCANCODE_A] * right * moveSpeed;
+
+			bool lmb = mouseState == SDL_BUTTON_LMASK;
+			bool rmb = mouseState == SDL_BUTTON_RMASK;
+			bool lrmb = mouseState == (SDL_BUTTON_LMASK ^ SDL_BUTTON_RMASK);
+			origin -= lmb * forward * moveSpeed * (float)mouseY;
+			origin -= lrmb * up * moveSpeed * (float)mouseY;
+
+			totalPitch -= rmb * rotSpeed * (float)mouseY;
+			totalYaw += lmb * rotSpeed * (float)mouseX;
+			totalYaw += rmb * rotSpeed * (float)mouseX;
+
+			Matrix finalRotation{ Matrix::CreateRotationX(totalPitch) * Matrix::CreateRotationY(totalYaw) };
+			forward = finalRotation.TransformVector(Vector3::UnitZ);
 
 			CalculateCameraToWorld();
 		}
