@@ -37,7 +37,14 @@ namespace dae {
 			GeometryUtils::HitTest_Sphere(sphere, ray, hitRecord);
 
 			//Update closest hit if new hit is closer
-			if (hitRecord.t < closestHit.t) closestHit = hitRecord;
+			if (hitRecord.t < closestHit.t)
+			{
+				closestHit.didHit = true;
+				closestHit.materialIndex = hitRecord.materialIndex;
+				closestHit.normal = hitRecord.normal;
+				closestHit.origin = hitRecord.origin;
+				closestHit.t = hitRecord.t;
+			}
 		}
 
 		for (auto& plane : m_PlaneGeometries)
@@ -46,7 +53,14 @@ namespace dae {
 			GeometryUtils::HitTest_Plane(plane, ray, hitRecord);
 
 			//Update closest hit if new hit is closer
-			if (hitRecord.t < closestHit.t) closestHit = hitRecord;
+			if (hitRecord.t < closestHit.t)
+			{
+				closestHit.didHit = true;
+				closestHit.materialIndex = hitRecord.materialIndex;
+				closestHit.normal = hitRecord.normal;
+				closestHit.origin = hitRecord.origin;
+				closestHit.t = hitRecord.t;
+			}
 		}
 	}
 
