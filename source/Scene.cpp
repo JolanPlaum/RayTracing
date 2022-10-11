@@ -200,5 +200,27 @@ namespace dae {
 		//Light
 		AddPointLight({ 0.f,5.f,-5.f }, 70.f, colors::White);
 	}
+	void Scene_W3_TestScene::Initialize()
+	{
+		m_Camera.origin = { 0.f, 1.f, -5.f };
+		m_Camera.fovAngle = 45.f;
+		m_Camera.fov = tanf(m_Camera.fovAngle / 2.f * TO_RADIANS);
+
+		//Materials
+		constexpr unsigned char matId_Solid_Red = 0;
+		const unsigned char matId_Solid_Blue = AddMaterial(new Material_SolidColor{ colors::Blue });
+		const unsigned char matId_Solid_Yellow = AddMaterial(new Material_SolidColor{ colors::Yellow });
+
+		//Spheres
+		AddSphere({ -0.75f, 1.f, 0.f }, 1.f, matId_Solid_Red);
+		AddSphere({ 0.75f, 1.f, 0.f }, 1.f, matId_Solid_Blue);
+
+		//Plane
+		AddPlane({ 0.f,0.f,0.f }, { 0.f,1.f,0.f }, matId_Solid_Yellow);
+
+		//Light
+		AddPointLight({ 0.f,5.f,5.f }, 25.f, colors::White);
+		AddPointLight({ 0.f,2.5f,-5.f }, 25.f, colors::White);
+	}
 #pragma endregion
 }
