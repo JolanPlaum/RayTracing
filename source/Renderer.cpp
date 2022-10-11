@@ -27,25 +27,23 @@ void Renderer::Render(Scene* pScene) const
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
 
-	//const Matrix cameraToWorld = camera.CalculateCameraToWorld();
+	float multiply{ 2.f * camera.fov / (float)m_Height };
+	float xAddition{ (1.f - m_Width) / 2.f };
+	float yAddition{ (m_Height - 1.f) / 2.f };
 
 	//For each pixel
 	for (int px{}; px < m_Width; ++px)
 	{
+		//Convert x coordinate to camera space
+		float cx{ multiply * (px + xAddition) };
+
 		for (int py{}; py < m_Height; ++py)
 		{
-			//Calculate center of pixel in raster space
-			float pxc{ px + 0.5f };
-			float pyc{ py + 0.5f };
-
-			//Convert coordinate from raster space to camera space
-			float cx{ (((2 * pxc) / m_Width) - 1.f) * ((float)m_Width / (float)m_Height) * camera.fov };
-			float cy{ (1.f - ((2.f * pyc) / float(m_Height))) * camera.fov };
+			//Convert y coordinate to camera space
+			float cy{ multiply * (-py + yAddition) };
 
 			//Convert camera space to world space
-			//auto rayDirection = Vector3::Lico(cx, camera.right, cy, camera.up, 1.f, camera.forward).Normalized(); //average of 33.0 fps
-			//auto rayDirection = cameraToWorld.TransformVector(cx, cy, 1.f).Normalized(); //average of 32.9 fps
-			auto rayDirection = (cx * camera.right + cy * camera.up + camera.forward).Normalized(); //average of 36.2 fps
+			Vector3 rayDirection = (cx * camera.right + cy * camera.up + camera.forward).Normalized();
 
 			//Ray we are casting from the camera towards each pixel
 			Ray viewRay{ camera.origin, rayDirection };
@@ -56,12 +54,14 @@ void Renderer::Render(Scene* pScene) const
 			//HitRecord containing more information about a potential hit
 			HitRecord closestHit{};
 			pScene->GetClosestHit(viewRay, closestHit);
-			closestHit.normal.Normalize();
 
 			if (closestHit.didHit)
 			{
 				//If we hit something, keep track of the material color
 				Material* const mat = materials[closestHit.materialIndex];
+
+				//Normalize closest hit normal
+				closestHit.normal.Normalize();
 
 				for (const Light& light : lights)
 				{
@@ -69,12 +69,12 @@ void Renderer::Render(Scene* pScene) const
 					Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
 					float distance = invLightDirection.Normalize();
 
-					//Observed area (lambert cosine law)
-					float dotProduct = closestHit.normal * invLightDirection;
-
 					//Shawdow
 					Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };
 					if (m_ShadowsEnabled && pScene->DoesHit(invLightRay)) continue;
+
+					//Observed area (lambert cosine law)
+					float dotProduct = closestHit.normal * invLightDirection;
 
 					//Lighting equation
 					switch (m_CurrentLightingMode)
