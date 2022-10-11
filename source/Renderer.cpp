@@ -74,7 +74,7 @@ void Renderer::Render(Scene* pScene) const
 
 					//Shawdow
 					Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };
-					if (pScene->DoesHit(invLightRay) && m_ShadowsEnabled) continue;
+					if (m_ShadowsEnabled && pScene->DoesHit(invLightRay)) continue;
 
 					//Lighting equation
 					switch (m_CurrentLightingMode)
