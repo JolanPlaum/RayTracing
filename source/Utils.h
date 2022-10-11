@@ -15,7 +15,7 @@ namespace dae
 			/*
 			*/
 			Vector3 tc = sphere.origin - ray.origin;
-			float dp = Vector3::Dot(tc, ray.direction);
+			float dp = tc * ray.direction;
 			float odSquare = tc.SqrMagnitude() - (dp * dp);
 			float tca = (sphere.radius * sphere.radius) - odSquare;
 			if (tca < 0.f) return false;
@@ -87,11 +87,11 @@ namespace dae
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//Return false if ray does not intersect (when ray direction and plane normal are perpendicular)
-			float dotProduct{ Vector3::Dot(ray.direction, plane.normal) };
+			float dotProduct{ ray.direction * plane.normal };
 			if (dotProduct == 0.f) return false;
 
 			//Calculate at which interval t the ray intersects
-			hitRecord.t = Vector3::Dot(plane.origin - ray.origin, plane.normal) / dotProduct;
+			hitRecord.t = ((plane.origin - ray.origin) * plane.normal) / dotProduct;
 
 			//Return false if t is outside ray interval
 			if (hitRecord.t < ray.min || hitRecord.t > ray.max)

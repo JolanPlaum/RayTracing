@@ -117,7 +117,7 @@ namespace dae
 			float g = BRDF::GeometryFunction_Smith(hitRecord.normal, v, l, a);
 
 			//Calculate Specular
-			ColorRGB cookTorrence = ColorRGB(d * f * g) / (4.f * Vector3::Dot(v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal));
+			ColorRGB cookTorrence = ColorRGB(d * f * g) / (4.f * (v * hitRecord.normal) * (l * hitRecord.normal));
 
 			//Calculate Diffuse if not a metal
 			if (m_Metalness <= 0.f)

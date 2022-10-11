@@ -70,7 +70,7 @@ void Renderer::Render(Scene* pScene) const
 					float distance = invLightDirection.Normalize();
 
 					//Observed area (lambert cosine law)
-					float dotProduct = Vector3::Dot(closestHit.normal, invLightDirection);
+					float dotProduct = closestHit.normal * invLightDirection;
 
 					//Shawdow
 					Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };

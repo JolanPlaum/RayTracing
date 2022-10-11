@@ -32,8 +32,8 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			Vector3 r = l - 2 * Vector3::Dot(n, l) * n;
-			float dot = Vector3::Dot(r, v);
+			Vector3 r = l - (n * (2.f * (n * l)));
+			float dot = r * v;
 			if (dot < 0.f) return {};
 			float result = ks * powf(dot, exp);
 			return ColorRGB{ result, result, result };
@@ -48,7 +48,7 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
-			return f0 + (ColorRGB{ 1.f,1.f,1.f } - f0) * powf((1.f - Vector3::Dot(h, v)), 5.f);
+			return f0 + (ColorRGB{ 1.f,1.f,1.f } - f0) * powf((1.f - h * v), 5.f);
 		}
 
 		/**
@@ -61,7 +61,7 @@ namespace dae
 		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
 		{
 			float a = roughness * roughness;
-			float temp = PI * Square(Square(Vector3::Dot(n, h)) * (a - 1.f) + 1.f);
+			float temp = PI * Square(Square(n * h) * (a - 1.f) + 1.f);
 			return a / temp;
 		}
 
@@ -76,7 +76,7 @@ namespace dae
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
 			float k = Square(roughness + 1.f) / 8.f; //direct lighting
-			float dotProduct = Vector3::Dot(n, v);
+			float dotProduct = n * v;
 			if (dotProduct < 0.f) return 0.f;
 			return dotProduct / (dotProduct * (1.f - k) + k);
 		}

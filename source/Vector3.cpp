@@ -43,9 +43,9 @@ namespace dae {
 		return { x / m, y / m, z / m };
 	}
 
-	float Vector3::Dot(const Vector3& v1, const Vector3& v2)
+	float Vector3::operator*(const Vector3& v) const
 	{
-		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+		return x * v.x + y * v.y + z * v.z;
 	}
 
 	Vector3 Vector3::Cross(const Vector3& v1, const Vector3& v2)
@@ -55,17 +55,17 @@ namespace dae {
 
 	Vector3 Vector3::Project(const Vector3& v1, const Vector3& v2)
 	{
-		return (v2 * (Dot(v1, v2) / Dot(v2, v2)));
+		return (v2 * ((v1 * v2) / (v2 * v2)));
 	}
 
 	Vector3 Vector3::Reject(const Vector3& v1, const Vector3& v2)
 	{
-		return (v1 - v2 * (Dot(v1, v2) / Dot(v2, v2)));
+		return (v1 - v2 * ((v1 * v2) / (v2 * v2)));
 	}
 
 	Vector3 Vector3::Reflect(const Vector3& v1, const Vector3& v2)
 	{
-		return v1 - (2.f * Vector3::Dot(v1, v2) * v2);
+		return v1 - (v2 * (2.f * (v1 * v2)));
 	}
 
 	Vector3 Vector3::Lico(float f1, const Vector3& v1, float f2, const Vector3& v2, float f3, const Vector3& v3)
@@ -139,6 +139,11 @@ namespace dae {
 		y += v.y;
 		z += v.z;
 		return *this;
+	}
+
+	float Vector3::Dot(const Vector3& v1, const Vector3& v2)
+	{
+		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 	}
 
 	float& Vector3::operator[](int index)
