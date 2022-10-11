@@ -77,6 +77,7 @@ namespace dae
 		{
 			float k = Square(roughness + 1.f) / 8.f; //direct lighting
 			float dotProduct = Vector3::Dot(n, v);
+			if (dotProduct < 0.f) return 0.f;
 			return dotProduct / (dotProduct * (1.f - k) + k);
 		}
 
