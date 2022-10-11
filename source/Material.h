@@ -106,9 +106,25 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			float a{ m_Roughness * m_Roughness }; //roughness squared
+			Vector3 h{ (v + l).Normalized() }; //half vector
+
+			//Fresnel
+			ColorRGB f = BRDF::FresnelFunction_Schlick(h, v, (m_Metalness <= 0.f) ? ColorRGB(0.04f, 0.04f, 0.04f) : m_Albedo);
+			//Normal Distribution
+			float d = BRDF::NormalDistribution_GGX(hitRecord.normal, h, a);
+			//Geometry
+			float g = BRDF::GeometryFunction_Smith(hitRecord.normal, v, l, a);
+
+			//Calculate Specular
+			ColorRGB cookTorrence = ColorRGB(d * f * g) / (4.f * Vector3::Dot(v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal));
+
+			//Calculate Diffuse if not a metal
+			if (m_Metalness <= 0.f)
+				cookTorrence += BRDF::Lambert(ColorRGB(1.f, 1.f, 1.f) - f, m_Albedo);
+
+			//Return final color
+			return cookTorrence;
 		}
 
 	private:
