@@ -78,7 +78,8 @@ void Renderer::Render(Scene* pScene) const
 					if (pScene->DoesHit(invLightRay)) continue;
 
 					//Lighting equation
-					finalColor += LightUtils::GetRadiance(light, closestHit.origin) * mat->Shade() * dotProduct;
+					finalColor += LightUtils::GetRadiance(light, closestHit.origin) * dotProduct 
+						* mat->Shade(closestHit, -invLightDirection, rayDirection);
 				}
 			}
 
