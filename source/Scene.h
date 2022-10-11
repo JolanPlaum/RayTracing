@@ -109,4 +109,20 @@ namespace dae
 
 		void Initialize() override;
 	};
+
+	//+++++++++++++++++++++++++++++++++++++++++
+	//WEEK 3 Test Scene
+	class Scene_W3_Scene final : public Scene
+	{
+	public:
+		Scene_W3_Scene() = default;
+		~Scene_W3_Scene() override = default;
+
+		Scene_W3_Scene(const Scene_W3_Scene&) = delete;
+		Scene_W3_Scene(Scene_W3_Scene&&) noexcept = delete;
+		Scene_W3_Scene& operator=(const Scene_W3_Scene&) = delete;
+		Scene_W3_Scene& operator=(Scene_W3_Scene&&) noexcept = delete;
+
+		void Initialize() override;
+	};
 }
