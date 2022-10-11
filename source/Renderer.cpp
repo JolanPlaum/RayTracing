@@ -71,15 +71,33 @@ void Renderer::Render(Scene* pScene) const
 
 					//Observed area (lambert cosine law)
 					float dotProduct = Vector3::Dot(closestHit.normal, invLightDirection);
-					if (dotProduct < 0.f) continue;
 
 					//Shawdow
 					Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };
-					if (pScene->DoesHit(invLightRay)) continue;
+					if (pScene->DoesHit(invLightRay) && m_ShadowsEnabled) continue;
 
 					//Lighting equation
-					finalColor += LightUtils::GetRadiance(light, closestHit.origin) * dotProduct 
-						* mat->Shade(closestHit, -invLightDirection, rayDirection);
+					switch (m_CurrentLightingMode)
+					{
+					case Renderer::LightingMode::ObservedArea:
+						if (dotProduct < 0.f) continue;
+						finalColor += {dotProduct, dotProduct, dotProduct};
+						break;
+
+					case Renderer::LightingMode::Radiance:
+						finalColor += LightUtils::GetRadiance(light, closestHit.origin);
+						break;
+
+					case Renderer::LightingMode::BRDF:
+						finalColor += mat->Shade(closestHit, invLightDirection, -rayDirection);
+						break;
+
+					case Renderer::LightingMode::Combined:
+						if (dotProduct < 0.f) continue;
+						finalColor += LightUtils::GetRadiance(light, closestHit.origin) * dotProduct
+							* mat->Shade(closestHit, invLightDirection, -rayDirection);
+						break;
+					}
 				}
 			}
 
