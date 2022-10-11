@@ -207,16 +207,16 @@ namespace dae {
 		m_Camera.fov = tanf(m_Camera.fovAngle / 2.f * TO_RADIANS);
 
 		//Materials
-		constexpr unsigned char matId_Solid_Red = 0;
-		const unsigned char matId_Solid_Blue = AddMaterial(new Material_SolidColor{ colors::Blue });
-		const unsigned char matId_Solid_Yellow = AddMaterial(new Material_SolidColor{ colors::Yellow });
+		const unsigned char matId_Lambert_Red = AddMaterial(new Material_Lambert(colors::Red, 1.f));
+		const unsigned char matId_Lambert_Blue = AddMaterial(new Material_Lambert(colors::Blue, 1.f));
+		const unsigned char matId_Lambert_Yellow = AddMaterial(new Material_Lambert(colors::Yellow, 1.f));
 
 		//Spheres
-		AddSphere({ -0.75f, 1.f, 0.f }, 1.f, matId_Solid_Red);
-		AddSphere({ 0.75f, 1.f, 0.f }, 1.f, matId_Solid_Blue);
+		AddSphere({ -0.75f, 1.f, 0.f }, 1.f, matId_Lambert_Red);
+		AddSphere({ 0.75f, 1.f, 0.f }, 1.f, matId_Lambert_Blue);
 
 		//Plane
-		AddPlane({ 0.f,0.f,0.f }, { 0.f,1.f,0.f }, matId_Solid_Yellow);
+		AddPlane({ 0.f,0.f,0.f }, { 0.f,1.f,0.f }, matId_Lambert_Yellow);
 
 		//Light
 		AddPointLight({ 0.f,5.f,5.f }, 25.f, colors::White);
