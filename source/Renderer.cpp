@@ -56,22 +56,29 @@ void Renderer::Render(Scene* pScene) const
 			//HitRecord containing more information about a potential hit
 			HitRecord closestHit{};
 			pScene->GetClosestHit(viewRay, closestHit);
+			closestHit.normal.Normalize();
 
 			if (closestHit.didHit)
 			{
-				//If we hit something, set finalColor to material color
-				finalColor = materials[closestHit.materialIndex]->Shade();
+				//If we hit something, keep track of the material color
+				Material* const mat = materials[closestHit.materialIndex];
 
 				for (const Light& light : lights)
 				{
+					//Light direction
 					Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
 					float distance = invLightDirection.Normalize();
-					Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };
 
-					if (pScene->DoesHit(invLightRay))
-					{
-						finalColor *= 0.5f;
-					}
+					//Observed area (lambert cosine law)
+					float dotProduct = Vector3::Dot(closestHit.normal, invLightDirection);
+					if (dotProduct < 0.f) continue;
+
+					//Shawdow
+					Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };
+					if (pScene->DoesHit(invLightRay)) continue;
+
+					//Lighting equation
+					finalColor += LightUtils::GetRadiance(light, closestHit.origin) * mat->Shade() * dotProduct;
 				}
 			}
 
