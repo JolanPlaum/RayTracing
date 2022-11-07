@@ -422,7 +422,7 @@ namespace dae {
 		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue); //LEFT
 
 		//Triangle Mesh
-		const auto triangleMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matCT_GrayMediumMetal);
+		const auto triangleMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
 		Utils::ParseOBJ("Resources/lowpoly_bunny2.obj",
 			triangleMesh->positions,
 			triangleMesh->normals,
@@ -430,6 +430,7 @@ namespace dae {
 
 		triangleMesh->Scale({ 2.f, 2.f, 2.f });
 
+		triangleMesh->UpdateAABB();
 		triangleMesh->UpdateTransforms();
 
 		//Lights
