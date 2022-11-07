@@ -62,6 +62,22 @@ namespace dae {
 				closestHit.t = hitRecord.t;
 			}
 		}
+
+		for (auto& triangleMesh : m_TriangleMeshGeometries)
+		{
+			//Perform TriangleMesh HitTest
+			GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray, hitRecord);
+
+			//Update closest hit if new hit is closer
+			if (hitRecord.t < closestHit.t)
+			{
+				closestHit.didHit = true;
+				closestHit.materialIndex = hitRecord.materialIndex;
+				closestHit.normal = hitRecord.normal;
+				closestHit.origin = hitRecord.origin;
+				closestHit.t = hitRecord.t;
+			}
+		}
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const
@@ -76,6 +92,12 @@ namespace dae {
 		{
 			//Perform Plane HitTest
 			if (GeometryUtils::HitTest_Plane(plane, ray)) return true;
+		}
+
+		for (auto& triangleMesh : m_TriangleMeshGeometries)
+		{
+			//Perform TriangleMesh HitTest
+			if (GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray)) return true;
 		}
 
 		return false;
