@@ -180,9 +180,38 @@ namespace dae
 #pragma region TriangeMesh HitTest
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			assert(false && "No Implemented Yet!");
-			return false;
+			//Temporary value to pass to HitTest function
+			HitRecord record{};
+			Triangle triangle{};
+			triangle.cullMode = mesh.cullMode;
+
+			//Loop over all indices in sets of 3 (each triangle has 3 points)
+			for (size_t index{}; index < mesh.indices.size() - 2; index += 3)
+			{
+				triangle.v0 = mesh.transformedPositions[mesh.indices[index]];
+				triangle.v1 = mesh.transformedPositions[mesh.indices[index + 1]];
+				triangle.v2 = mesh.transformedPositions[mesh.indices[index + 2]];
+				triangle.normal = mesh.transformedNormals[index / 3];
+
+				// If the ray hits a triangle in the mesh, check if it is closer then the previous hit triangle
+				if (HitTest_Triangle(triangle, ray, record, ignoreHitRecord))
+				{
+					// If the hit records needs to be ignored, it doesn't matter where the triangle is, so just return true
+					if (ignoreHitRecord) return true;
+
+					// Check if the current hit is closer then the previous hit
+					if (hitRecord.t > record.t)
+					{
+						hitRecord.didHit = true;
+						hitRecord.normal = record.normal;
+						hitRecord.origin = record.origin;
+						hitRecord.t = record.t;
+					}
+				}
+			}
+
+			hitRecord.materialIndex = mesh.materialIndex;
+			return hitRecord.didHit;
 		}
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
