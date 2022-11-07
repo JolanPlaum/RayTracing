@@ -125,4 +125,24 @@ namespace dae
 
 		void Initialize() override;
 	};
+
+	//+++++++++++++++++++++++++++++++++++++++++
+	//WEEK 4 Test Scene
+	class Scene_W4_TestScene final : public Scene
+	{
+	public:
+		Scene_W4_TestScene() = default;
+		~Scene_W4_TestScene() override = default;
+
+		Scene_W4_TestScene(const Scene_W4_TestScene&) = delete;
+		Scene_W4_TestScene(Scene_W4_TestScene&&) noexcept = delete;
+		Scene_W4_TestScene& operator=(const Scene_W4_TestScene&) = delete;
+		Scene_W4_TestScene& operator=(Scene_W4_TestScene&&) noexcept = delete;
+
+		void Initialize() override;
+		void Update(Timer* pTimer) override;
+
+	private:
+		TriangleMesh* pMesh{ nullptr };
+	};
 }
