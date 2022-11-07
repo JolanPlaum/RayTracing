@@ -190,6 +190,7 @@ namespace dae {
 		AddPlane({ 0.f, 75.f, 0.f }, { 0.f, -1.f,0.f }, matId_Solid_Yellow);
 		AddPlane({ 0.f, 0.f, 125.f }, { 0.f, 0.f,-1.f }, matId_Solid_Magenta);
 	}
+
 	void Scene_W2::Initialize()
 	{
 		m_Camera.origin = { 0.f,3.f,-9.f };
@@ -222,6 +223,7 @@ namespace dae {
 		//Light
 		AddPointLight({ 0.f,5.f,-5.f }, 70.f, colors::White);
 	}
+
 	void Scene_W3_TestScene::Initialize()
 	{
 		m_Camera.origin = { 0.f, 1.f, -5.f };
@@ -267,7 +269,14 @@ namespace dae {
 		AddPlane({ 5.f, 0.f, 0.f }, { -1.f, 0.f, 0.f }, matLambert_GrayBlue); //RIGHT
 		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue); //LEFT
 
+		const unsigned char matId_LambertPhong_Blue1 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 3.f));
+		const unsigned char matId_LambertPhong_Blue2 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 15.f));
+		const unsigned char matId_LambertPhong_Blue3 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 50.f));
+
 		//Spheres
+		//AddSphere({ -1.75f,	1.f,	0.f }, .75f, matId_LambertPhong_Blue1);
+		//AddSphere({ 0.f,	1.f,	0.f }, .75f, matId_LambertPhong_Blue2);
+		//AddSphere({ 1.75f,	1.f,	0.f }, .75f, matId_LambertPhong_Blue3);
 		AddSphere({ -1.75f,	1.f,	0.f }, .75f, matCT_GrayRoughMetal);
 		AddSphere({ 0.f,	1.f,	0.f }, .75f, matCT_GrayMediumMetal);
 		AddSphere({ 1.75f,	1.f,	0.f }, .75f, matCT_GraySmoothMetal);
