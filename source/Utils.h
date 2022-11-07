@@ -117,9 +117,58 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			assert(false && "No Implemented Yet!");
-			return false;
+			//Return false if triangle is not visible (cull mode check)
+			float dotProduct{ ray.direction * triangle.normal };
+			TriangleCullMode culling{ (ignoreHitRecord) ? TriangleCullMode((int)triangle.cullMode * -1) : triangle.cullMode };
+			switch (culling)
+			{
+			case TriangleCullMode::FrontFaceCulling:
+				if (dotProduct <= 0.f) return false;
+				break;
+
+			case TriangleCullMode::BackFaceCulling:
+				if (dotProduct >= 0.f) return false;
+				break;
+
+			case TriangleCullMode::NoCulling:
+				if (dotProduct == 0.f) return false;
+				break;
+			}
+
+			//Calculate center of triangle
+			Vector3 center{ (triangle.v0 + triangle.v1 + triangle.v2) / 3.f };
+
+			//Calculate at which interval t the ray intersects
+			float t = ((center - ray.origin) * triangle.normal) / dotProduct;
+
+			//Return false if t is outside ray interval
+			if (t < ray.min || t > ray.max)
+			{
+				return false;
+			}
+
+			//Calculate point on triangle (plane)
+			Vector3 point = ray.origin + t * ray.direction;
+
+			//Check if point is inside triangle
+			Vector3 edge = triangle.v1 - triangle.v0;
+			Vector3 pointToSide = point - triangle.v0;
+			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
+
+			edge = triangle.v2 - triangle.v1;
+			pointToSide = point - triangle.v1;
+			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
+
+			edge = triangle.v0 - triangle.v2;
+			pointToSide = point - triangle.v2;
+			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
+
+			//Set hit values and return true
+			hitRecord.t = t;
+			hitRecord.origin = point;
+			hitRecord.normal = triangle.normal;
+			hitRecord.materialIndex = triangle.materialIndex;
+			return hitRecord.didHit = true;
 		}
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)

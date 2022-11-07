@@ -25,9 +25,9 @@ namespace dae
 
 	enum class TriangleCullMode
 	{
-		FrontFaceCulling,
-		BackFaceCulling,
-		NoCulling
+		FrontFaceCulling = -1,
+		BackFaceCulling = 1,
+		NoCulling = 0
 	};
 
 	struct Triangle
