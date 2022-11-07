@@ -393,5 +393,40 @@ namespace dae {
 			m->UpdateTransforms();
 		}
 	}
+
+	void Scene_W4_BunnyScene::Initialize()
+	{
+		m_Camera.origin = { 0.f, 3.f, -9.f };
+		m_Camera.fovAngle = 45.f;
+		m_Camera.fov = tanf(m_Camera.fovAngle / 2.f * TO_RADIANS);
+
+		//Materials
+		const unsigned char matCT_GrayMediumMetal = AddMaterial(new Material_CookTorrence(fresnel::Silver, 1.f, 0.6f));
+		const unsigned char matLambert_GrayBlue = AddMaterial(new Material_Lambert({ 0.49f, 0.57f, 0.57f }, 1.f));
+		const unsigned char matLambert_White = AddMaterial(new Material_Lambert(colors::White, 1.f));
+
+		//Planes
+		AddPlane({ 0.f, 0.f, 10.f }, { 0.f, 0.f, -1.f }, matLambert_GrayBlue); //BACK
+		AddPlane({ 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }, matLambert_GrayBlue); //BOTTOM
+		AddPlane({ 0.f, 10.f, 0.f }, { 0.f, -1.f, 0.f }, matLambert_GrayBlue); //TOP
+		AddPlane({ 5.f, 0.f, 0.f }, { -1.f, 0.f, 0.f }, matLambert_GrayBlue); //RIGHT
+		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue); //LEFT
+
+		//Triangle Mesh
+		const auto triangleMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matCT_GrayMediumMetal);
+		Utils::ParseOBJ("Resources/lowpoly_bunny2.obj",
+			triangleMesh->positions,
+			triangleMesh->normals,
+			triangleMesh->indices);
+
+		triangleMesh->Scale({ 2.f, 2.f, 2.f });
+
+		triangleMesh->UpdateTransforms();
+
+		//Lights
+		AddPointLight({ 0.f,	5.f,	5.f }, 50.f, ColorRGB{ 1.f, 0.61f, 0.45f }); //Backlight
+		AddPointLight({ -2.5f,	5.f,	-5.f }, 70.f, ColorRGB{ 1.f, 0.8f, 0.45f }); //Front Light Left
+		AddPointLight({ 2.5f,	2.5f,	-5.f }, 50.f, ColorRGB{ 0.34f, 0.47f, 0.68f });
+	}
 #pragma endregion
 }
