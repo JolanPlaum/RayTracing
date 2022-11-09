@@ -518,10 +518,11 @@ namespace dae {
 		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue); //LEFT
 
 		//Triangle Mesh
+		const unsigned char matId_RubiksCube = matLambert_White;
 		int nrCorners{ 8 }, nrSides{ 12 }, nrMiddles{ 6 };
 		for (int i{ 0 }; i < nrCorners; ++i)
 		{
-			TriangleMesh* pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matCT_GrayMediumMetal);
+			TriangleMesh* pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matId_RubiksCube);
 			Utils::ParseOBJ("Resources/RubiksCubeCorner" + std::to_string(i + 1) + ".obj",
 				pMesh->positions,
 				pMesh->normals,
@@ -537,7 +538,7 @@ namespace dae {
 		}
 		for (int i{ 0 }; i < nrSides; ++i)
 		{
-			TriangleMesh* pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matCT_GrayMediumMetal);
+			TriangleMesh* pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matId_RubiksCube);
 			Utils::ParseOBJ("Resources/RubiksCubeSide" + std::to_string(i + 1) + ".obj",
 				pMesh->positions,
 				pMesh->normals,
@@ -553,7 +554,7 @@ namespace dae {
 		}
 		for (int i{ 0 }; i < nrMiddles; ++i)
 		{
-			TriangleMesh* pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matCT_GrayMediumMetal);
+			TriangleMesh* pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matId_RubiksCube);
 			Utils::ParseOBJ("Resources/RubiksCubeMiddle" + std::to_string(i + 1) + ".obj",
 				pMesh->positions,
 				pMesh->normals,
