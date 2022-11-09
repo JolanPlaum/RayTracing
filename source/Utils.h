@@ -20,21 +20,24 @@ namespace dae
 			float tca = (sphere.radius * sphere.radius) - odSquare;
 			if (tca < 0.f) return false;
 			tca = sqrtf(tca);
-			hitRecord.t = dp - tca;
+			float t = dp - tca;
 
-			if (hitRecord.t < ray.min || hitRecord.t > ray.max)
+			if (t < ray.min || t > ray.max)
 			{
 				//Calculate higher interval t if t is outside ray interval
-				hitRecord.t = dp + tca;
+				t = dp + tca;
 
 				//Return false if t is still outside ray interval
-				if (hitRecord.t < ray.min || hitRecord.t > ray.max)
-				{
-					hitRecord.t = FLT_MAX;
+				if (t < ray.min || t > ray.max)
 					return false;
-				}
 			}
 
+			//Return true if hitrecord can be ignored
+			if (ignoreHitRecord)
+				return true;
+
+			//Set hit values and return true
+			hitRecord.t = t;
 			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
 			hitRecord.normal = hitRecord.origin - sphere.origin;
 			hitRecord.materialIndex = sphere.materialIndex;
@@ -54,21 +57,23 @@ namespace dae
 			discriminant = sqrtf(discriminant);
 
 			//Calculate smaller interval t at which the ray intersects
-			hitRecord.t = (-b - discriminant) / (2.f * a);
-			if (hitRecord.t < ray.min || hitRecord.t > ray.max)
+			float t = (-b - discriminant) / (2.f * a);
+			if (t < ray.min || t > ray.max)
 			{
 				//Calculate higher interval t if t is outside ray interval
-				hitRecord.t = (-b + discriminant) / (2.f * a);
+				t = (-b + discriminant) / (2.f * a);
 
 				//Return false if t is still outside ray interval
-				if (hitRecord.t < ray.min || hitRecord.t > ray.max)
-				{
-					hitRecord.t = FLT_MAX;
+				if (t < ray.min || t > ray.max)
 					return false;
-				}
 			}
 
+			//Return true if hitrecord can be ignored
+			if (ignoreHitRecord)
+				return true;
+
 			//Set hit values and return true
+			hitRecord.t = t;
 			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
 			hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 			hitRecord.materialIndex = sphere.materialIndex;
@@ -91,16 +96,18 @@ namespace dae
 			if (dotProduct == 0.f) return false;
 
 			//Calculate at which interval t the ray intersects
-			hitRecord.t = ((plane.origin - ray.origin) * plane.normal) / dotProduct;
+			float t = ((plane.origin - ray.origin) * plane.normal) / dotProduct;
 
 			//Return false if t is outside ray interval
-			if (hitRecord.t < ray.min || hitRecord.t > ray.max)
-			{
-				hitRecord.t = FLT_MAX;
+			if (t < ray.min || t > ray.max)
 				return false;
-			}
+
+			//Return true if hitrecord can be ignored
+			if (ignoreHitRecord)
+				return true;
 
 			//Set hit values and return true
+			hitRecord.t = t;
 			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
 			hitRecord.normal = plane.normal;
 			hitRecord.materialIndex = plane.materialIndex;
@@ -162,6 +169,9 @@ namespace dae
 			edge = triangle.v0 - triangle.v2;
 			pointToSide = point - triangle.v2;
 			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
+
+			if (ignoreHitRecord)
+				return true;
 
 			//Set hit values and return true
 			hitRecord.t = t;
@@ -313,17 +323,17 @@ namespace dae
 				}
 				else if (sCommand == "f")
 				{
-					float i0, i1, i2;
+					std::string i0, i1, i2;
 					file >> i0 >> i1 >> i2;
 
-					indices.push_back((int)i0 - 1);
-					indices.push_back((int)i1 - 1);
-					indices.push_back((int)i2 - 1);
+					indices.push_back((int)stoi(i0) - 1);
+					indices.push_back((int)stoi(i1) - 1);
+					indices.push_back((int)stoi(i2) - 1);
 				}
 				//read till end of line and ignore all remaining chars
 				file.ignore(1000, '\n');
 
-				if (file.eof()) 
+				if (file.eof())
 					break;
 			}
 
@@ -338,7 +348,7 @@ namespace dae
 				Vector3 edgeV0V2 = positions[i2] - positions[i0];
 				Vector3 normal = Vector3::Cross(edgeV0V1, edgeV0V2);
 
-				if(isnan(normal.x))
+				if (isnan(normal.x))
 				{
 					int k = 0;
 				}
