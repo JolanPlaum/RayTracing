@@ -110,6 +110,11 @@ namespace dae
 			rotationTransform = Matrix::CreateRotationY(yaw);
 		}
 
+		void RotateXY(float pitch, float yaw)
+		{
+			rotationTransform = Matrix::CreateRotation(pitch, yaw, 0.f);
+		}
+
 		void Scale(const Vector3& scale)
 		{
 			scaleTransform = Matrix::CreateScale(scale);

@@ -577,10 +577,10 @@ namespace dae {
 	{
 		Scene::Update(pTimer);
 
-		const auto yawAngle = (cos(pTimer->GetTotal() / 2.f) + 1.f) / 2.f * PI_2;
+		const auto angle = (cos(pTimer->GetTotal() / 5.f) + 1.f) / 2.f * PI_2;
 		for (const auto m : m_Meshes)
 		{
-			m->RotateY(yawAngle);
+			m->RotateXY(angle, angle);
 			m->UpdateTransforms();
 		}
 	}
