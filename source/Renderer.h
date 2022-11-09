@@ -11,6 +11,9 @@ namespace dae
 	class Scene;
 	struct Camera;
 	struct Light;
+	struct HitRecord;
+	struct ColorRGB;
+	struct Vector3;
 	class Material;
 
 	class Renderer final
@@ -25,7 +28,8 @@ namespace dae
 		Renderer& operator=(Renderer&&) noexcept = delete;
 
 		void Render(Scene* pScene) const;
-		void RenderPixel(Scene* pScene, uint32_t pixelIndex, const Camera& camera, const std::vector<Light>& lights, const std::vector<Material*>& materials) const;
+		void RenderPixel(Scene* pScene, uint32_t pixelIndex, float multiply, const Camera& camera, const std::vector<Light>& lights, const std::vector<Material*>& materials) const;
+		void RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float aspectRatio, const Camera& camera, const std::vector<Light>& lights, const std::vector<Material*>& materials) const;
 		bool SaveBufferToImage() const;
 
 		void CycleLightingMode() { m_CurrentLightingMode = LightingMode(((int)m_CurrentLightingMode + 1) % (int)LightingMode::End); }
@@ -55,5 +59,10 @@ namespace dae
 
 		LightingMode m_CurrentLightingMode{ LightingMode::Combined };
 		bool m_ShadowsEnabled{ true };
+
+		ColorRGB ObservedArea(const Scene* pScene, const Light& light, const HitRecord& closestHit) const;
+		ColorRGB Radiance(const Scene* pScene, const Light& light, const HitRecord& closestHit) const;
+		ColorRGB BRDF(const Scene* pScene, const Light& light, const HitRecord& closestHit, Material* const mat, const Vector3& rayDirection) const;
+		ColorRGB Combined(const Scene* pScene, const Light& light, const HitRecord& closestHit, Material* const mat, const Vector3& rayDirection) const;
 	};
 }
