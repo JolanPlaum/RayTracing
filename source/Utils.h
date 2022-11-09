@@ -170,8 +170,8 @@ namespace dae
 			pointToSide = point - triangle.v2;
 			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
 
-			if (ignoreHitRecord)
-				return true;
+			//if (ignoreHitRecord)
+			//	return true;
 
 			//Set hit values and return true
 			hitRecord.t = t;
@@ -326,9 +326,12 @@ namespace dae
 					std::string i0, i1, i2;
 					file >> i0 >> i1 >> i2;
 
-					indices.push_back((int)stoi(i0) - 1);
-					indices.push_back((int)stoi(i1) - 1);
-					indices.push_back((int)stoi(i2) - 1);
+					if (i0 != "")
+					{
+						indices.push_back((int)stoi(i0) - 1);
+						indices.push_back((int)stoi(i1) - 1);
+						indices.push_back((int)stoi(i2) - 1);
+					}
 				}
 				//read till end of line and ignore all remaining chars
 				file.ignore(1000, '\n');
