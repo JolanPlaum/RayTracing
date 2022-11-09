@@ -450,5 +450,52 @@ namespace dae {
 		m_pMesh->RotateY(yawAngle);
 		m_pMesh->UpdateTransforms();
 	}
+
+	void Scene_TestExtra::Initialize()
+	{
+		m_Camera.origin = { 0.f, 3.f, -9.f };
+		m_Camera.fovAngle = 45.f;
+		m_Camera.fov = tanf(m_Camera.fovAngle / 2.f * TO_RADIANS);
+
+		//Materials
+		const unsigned char matCT_GrayMediumMetal = AddMaterial(new Material_CookTorrence(fresnel::Silver, 1.f, 0.6f));
+		const unsigned char matLambert_GrayBlue = AddMaterial(new Material_Lambert({ 0.49f, 0.57f, 0.57f }, 1.f));
+		const unsigned char matLambert_White = AddMaterial(new Material_Lambert(colors::White, 1.f));
+		const unsigned char matId_Solid_White = AddMaterial(new Material_SolidColor{ colors::White });
+
+		//Planes
+		AddPlane({ 0.f, 0.f, 10.f }, { 0.f, 0.f, -1.f }, matLambert_GrayBlue); //BACK
+		AddPlane({ 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }, matLambert_GrayBlue); //BOTTOM
+		AddPlane({ 0.f, 10.f, 0.f }, { 0.f, -1.f, 0.f }, matLambert_GrayBlue); //TOP
+		AddPlane({ 5.f, 0.f, 0.f }, { -1.f, 0.f, 0.f }, matLambert_GrayBlue); //RIGHT
+		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue); //LEFT
+
+		//Triangle Mesh
+		m_pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matCT_GrayMediumMetal);
+		Utils::ParseOBJ("Resources/RubiksCube2.obj",
+			m_pMesh->positions,
+			m_pMesh->normals,
+			m_pMesh->indices);
+
+		m_pMesh->Scale({ 0.01f, 0.01f, 0.01f });
+		m_pMesh->Translate({ 0, 3, 0 });
+
+		m_pMesh->UpdateAABB();
+		m_pMesh->UpdateTransforms();
+
+		//Lights
+		AddPointLight({ 0.f,	5.f,	5.f }, 50.f, ColorRGB{ 1.f, 0.61f, 0.45f }); //Backlight
+		AddPointLight({ -2.5f,	5.f,	-5.f }, 70.f, ColorRGB{ 1.f, 0.8f, 0.45f }); //Front Light Left
+		AddPointLight({ 2.5f,	2.5f,	-5.f }, 50.f, ColorRGB{ 0.34f, 0.47f, 0.68f });
+	}
+	void Scene_TestExtra::Update(Timer* pTimer)
+	{
+		Scene::Update(pTimer);
+
+		const auto yawAngle = (cos(pTimer->GetTotal() / 10.f) + 1.f) / 2.f * PI_2;
+
+		m_pMesh->RotateY(yawAngle);
+		m_pMesh->UpdateTransforms();
+	}
 #pragma endregion
 }

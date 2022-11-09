@@ -185,4 +185,24 @@ namespace dae
 	private:
 		TriangleMesh* m_pMesh{ nullptr };
 	};
+
+	//+++++++++++++++++++++++++++++++++++++++++
+	//EXTRA Scene
+	class Scene_TestExtra final : public Scene
+	{
+	public:
+		Scene_TestExtra() = default;
+		~Scene_TestExtra() override = default;
+
+		Scene_TestExtra(const Scene_TestExtra&) = delete;
+		Scene_TestExtra(Scene_TestExtra&&) noexcept = delete;
+		Scene_TestExtra& operator=(const Scene_TestExtra&) = delete;
+		Scene_TestExtra& operator=(Scene_TestExtra&&) noexcept = delete;
+
+		void Initialize() override;
+		void Update(Timer* pTimer) override;
+
+	private:
+		TriangleMesh* m_pMesh{ nullptr };
+	};
 }
