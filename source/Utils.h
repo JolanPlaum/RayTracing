@@ -4,6 +4,9 @@
 #include "Math.h"
 #include "DataTypes.h"
 
+#define IGNOREHITRECORD_SEPERATE
+//#define HITTEST_SPHERE_ANALYTIC
+
 namespace dae
 {
 	namespace GeometryUtils
@@ -12,45 +15,14 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			/*
-			*/
-			Vector3 tc = sphere.origin - ray.origin;
-			float dp = tc * ray.direction;
-			float odSquare = tc.SqrMagnitude() - (dp * dp);
-			float tca = (sphere.radius * sphere.radius) - odSquare;
-			if (tca < 0.f) return false;
-			tca = sqrtf(tca);
-			float t = dp - tca;
-
-			if (t < ray.min || t > ray.max)
-			{
-				//Calculate higher interval t if t is outside ray interval
-				t = dp + tca;
-
-				//Return false if t is still outside ray interval
-				if (t < ray.min || t > ray.max)
-					return false;
-			}
-
-			//Return true if hitrecord can be ignored
-			if (ignoreHitRecord)
-				return true;
-
-			//Set hit values and return true
-			hitRecord.t = t;
-			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
-			hitRecord.normal = hitRecord.origin - sphere.origin;
-			hitRecord.materialIndex = sphere.materialIndex;
-			return hitRecord.didHit = true;
-
-			/*
+	#if defined(HITTEST_SPHERE_ANALYTIC)
 			//Variables for quadratic equation
 			float a{ ray.direction.SqrMagnitude() };
 			float b{ Vector3::Dot(2.f * ray.direction, ray.origin - sphere.origin) };
-			float c{ (ray.origin - sphere.origin).SqrMagnitude() - Square(sphere.radius)};
+			float c{ (ray.origin - sphere.origin).SqrMagnitude() - sphere.radius * sphere.radius};
 
 			//Return false if ray does not intersect (discriminant needs to be larger than 0)
-			float discriminant{ Square(b) - 4.f * a * c };
+			float discriminant{ b * b - 4.f * a * c };
 			if (discriminant <= 0.f) return false;
 
 			//Set discrimant as the square root of itself (prevents having to calculate it multiple times)
@@ -68,9 +40,11 @@ namespace dae
 					return false;
 			}
 
+		#if !defined(IGNOREHITRECORD_SEPERATE)
 			//Return true if hitrecord can be ignored
 			if (ignoreHitRecord)
 				return true;
+		#endif
 
 			//Set hit values and return true
 			hitRecord.t = t;
@@ -78,13 +52,106 @@ namespace dae
 			hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 			hitRecord.materialIndex = sphere.materialIndex;
 			return hitRecord.didHit = true;
-			*/
+	#else
+			//Vector from ray origin to sphere origin
+			Vector3 tc = sphere.origin - ray.origin;
+			float dotProduct = tc * ray.direction;
+			float oppositeSideSquared = tc.SqrMagnitude() - (dotProduct * dotProduct);
+
+			//Return false if ray does not intersect (sphere radius needs to be larger than opposite side)
+			float tcAdjacent = (sphere.radius * sphere.radius) - oppositeSideSquared;
+			if (tcAdjacent < 0.f) return false;
+
+			//Square root the ray-sphere adjacent side for the actual length (since we are now sure that it's above 0)
+			tcAdjacent = sqrtf(tcAdjacent);
+
+			//Calculate smaller interval t at which the ray intersects
+			float t = dotProduct - tcAdjacent;
+			if (t < ray.min || t > ray.max)
+			{
+				//Calculate higher interval t if t is outside ray interval
+				t = dotProduct + tcAdjacent;
+
+				//Return false if t is still outside ray interval
+				if (t < ray.min || t > ray.max)
+					return false;
+			}
+
+		#if !defined(IGNOREHITRECORD_SEPERATE)
+			//Return true if hitrecord can be ignored
+			if (ignoreHitRecord)
+				return true;
+		#endif
+
+			//Set hit values and return true
+			hitRecord.t = t;
+			hitRecord.origin = ray.origin + hitRecord.t * ray.direction;
+			hitRecord.normal = hitRecord.origin - sphere.origin;
+			hitRecord.materialIndex = sphere.materialIndex;
+			return hitRecord.didHit = true;
+	#endif
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
 		{
+	#if defined(IGNOREHITRECORD_SEPERATE)
+		#if defined(HITTEST_SPHERE_ANALYTIC)
+			//Variables for quadratic equation
+			float a{ ray.direction.SqrMagnitude() };
+			float b{ Vector3::Dot(2.f * ray.direction, ray.origin - sphere.origin) };
+			float c{ (ray.origin - sphere.origin).SqrMagnitude() - sphere.radius * sphere.radius };
+
+			//Return false if ray does not intersect (discriminant needs to be larger than 0)
+			float discriminant{ b * b - 4.f * a * c };
+			if (discriminant <= 0.f) return false;
+
+			//Set discrimant as the square root of itself (prevents having to calculate it multiple times)
+			discriminant = sqrtf(discriminant);
+
+			//Calculate smaller interval t at which the ray intersects
+			float t = (-b - discriminant) / (2.f * a);
+			if (t < ray.min || t > ray.max)
+			{
+				//Calculate higher interval t if t is outside ray interval
+				t = (-b + discriminant) / (2.f * a);
+
+				//Return false if t is still outside ray interval
+				if (t < ray.min || t > ray.max)
+					return false;
+			}
+			
+			return true;
+		#else
+			//Vector from ray origin to sphere origin
+			Vector3 tc = sphere.origin - ray.origin;
+			float dotProduct = tc * ray.direction;
+			float oppositeSideSquared = tc.SqrMagnitude() - (dotProduct * dotProduct);
+
+			//Return false if ray does not intersect (sphere radius needs to be larger than opposite side)
+			float tcAdjacent = (sphere.radius * sphere.radius) - oppositeSideSquared;
+			if (tcAdjacent < 0.f) return false;
+
+			//Square root the ray-sphere adjacent side for the actual length (since we are now sure that it's above 0)
+			tcAdjacent = sqrtf(tcAdjacent);
+
+			//Calculate smaller interval t at which the ray intersects
+			float t = dotProduct - tcAdjacent;
+			if (t < ray.min || t > ray.max)
+			{
+				//Calculate higher interval t if t is outside ray interval
+				t = dotProduct + tcAdjacent;
+
+				//Return false if t is still outside ray interval
+				if (t < ray.min || t > ray.max)
+					return false;
+			}
+
+			return true;
+		#endif
+	#else
 			HitRecord temp{};
 			return HitTest_Sphere(sphere, ray, temp, true);
+	#endif
 		}
 #pragma endregion
 #pragma region Plane HitTest
@@ -102,9 +169,11 @@ namespace dae
 			if (t < ray.min || t > ray.max)
 				return false;
 
+#if !defined(IGNOREHITRECORD_SEPERATE)
 			//Return true if hitrecord can be ignored
 			if (ignoreHitRecord)
 				return true;
+#endif
 
 			//Set hit values and return true
 			hitRecord.t = t;
@@ -116,8 +185,23 @@ namespace dae
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
 		{
+#if defined(IGNOREHITRECORD_SEPERATE)
+			//Return false if ray does not intersect (when ray direction and plane normal are perpendicular)
+			float dotProduct{ ray.direction * plane.normal };
+			if (dotProduct == 0.f) return false;
+
+			//Calculate at which interval t the ray intersects
+			float t = ((plane.origin - ray.origin) * plane.normal) / dotProduct;
+
+			//Return false if t is outside ray interval
+			if (t < ray.min || t > ray.max)
+				return false;
+
+			return true;
+#else
 			HitRecord temp{};
 			return HitTest_Plane(plane, ray, temp, true);
+#endif
 		}
 #pragma endregion
 #pragma region Triangle HitTest
@@ -126,8 +210,12 @@ namespace dae
 		{
 			//Return false if triangle is not visible (cull mode check)
 			float dotProduct{ ray.direction * triangle.normal };
+#if defined(IGNOREHITRECORD_SEPERATE)
+			switch (triangle.cullMode)
+#else
 			TriangleCullMode culling{ (ignoreHitRecord) ? TriangleCullMode((int)triangle.cullMode * -1) : triangle.cullMode };
 			switch (culling)
+#endif
 			{
 			case TriangleCullMode::FrontFaceCulling:
 				if (dotProduct <= 0.f) return false;
@@ -170,8 +258,10 @@ namespace dae
 			pointToSide = point - triangle.v2;
 			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
 
-			//if (ignoreHitRecord)
-			//	return true;
+#if !defined(IGNOREHITRECORD_SEPERATE)
+			if (ignoreHitRecord)
+				return true;
+#endif
 
 			//Set hit values and return true
 			hitRecord.t = t;
@@ -183,8 +273,57 @@ namespace dae
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
 		{
+#if defined(IGNOREHITRECORD_SEPERATE)
+			//Return false if triangle is not visible (cull mode check)
+			float dotProduct{ ray.direction * triangle.normal };
+			switch (TriangleCullMode((int)triangle.cullMode * -1))
+			{
+			case TriangleCullMode::FrontFaceCulling:
+				if (dotProduct <= 0.f) return false;
+				break;
+
+			case TriangleCullMode::BackFaceCulling:
+				if (dotProduct >= 0.f) return false;
+				break;
+
+			case TriangleCullMode::NoCulling:
+				if (dotProduct == 0.f) return false;
+				break;
+			}
+
+			//Calculate center of triangle
+			Vector3 center{ (triangle.v0 + triangle.v1 + triangle.v2) / 3.f };
+
+			//Calculate at which interval t the ray intersects
+			float t = ((center - ray.origin) * triangle.normal) / dotProduct;
+
+			//Return false if t is outside ray interval
+			if (t < ray.min || t > ray.max)
+			{
+				return false;
+			}
+
+			//Calculate point on triangle (plane)
+			Vector3 point = ray.origin + t * ray.direction;
+
+			//Check if point is inside triangle
+			Vector3 edge = triangle.v1 - triangle.v0;
+			Vector3 pointToSide = point - triangle.v0;
+			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
+
+			edge = triangle.v2 - triangle.v1;
+			pointToSide = point - triangle.v1;
+			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
+
+			edge = triangle.v0 - triangle.v2;
+			pointToSide = point - triangle.v2;
+			if (triangle.normal * Vector3::Cross(edge, pointToSide) < 0.f) return false;
+
+			return true;
+#else
 			HitRecord temp{};
 			return HitTest_Triangle(triangle, ray, temp, true);
+#endif
 		}
 #pragma endregion
 #pragma region TriangeMesh HitTest
@@ -232,8 +371,10 @@ namespace dae
 				// If the ray hits a triangle in the mesh, check if it is closer then the previous hit triangle
 				if (HitTest_Triangle(triangle, ray, record, ignoreHitRecord))
 				{
+#if !defined(IGNOREHITRECORD_SEPERATE)
 					// If the hit records needs to be ignored, it doesn't matter where the triangle is, so just return true
 					if (ignoreHitRecord) return true;
+#endif
 
 					// Check if the current hit is closer then the previous hit
 					if (hitRecord.t > record.t)
@@ -252,8 +393,35 @@ namespace dae
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
 		{
+#if defined(IGNOREHITRECORD_SEPERATE)
+			// slabtest
+			if (!SlabTest_TriangleMesh(mesh, ray)) return false;
+
+			//Temporary value to pass to HitTest function
+			HitRecord record{};
+			Triangle triangle{};
+			triangle.cullMode = mesh.cullMode;
+
+			//Loop over all indices in sets of 3 (each triangle has 3 points)
+			for (size_t index{}; index < mesh.indices.size() - 2; index += 3)
+			{
+				triangle.v0 = mesh.transformedPositions[mesh.indices[index]];
+				triangle.v1 = mesh.transformedPositions[mesh.indices[index + 1]];
+				triangle.v2 = mesh.transformedPositions[mesh.indices[index + 2]];
+				triangle.normal = mesh.transformedNormals[index / 3];
+
+				// If the ray hits a triangle in the mesh, check if it is closer then the previous hit triangle
+				if (HitTest_Triangle(triangle, ray))
+				{
+					return true;
+				}
+			}
+
+			return false;
+#else
 			HitRecord temp{};
 			return HitTest_TriangleMesh(mesh, ray, temp, true);
+#endif
 		}
 #pragma endregion
 	}
