@@ -211,11 +211,11 @@ namespace dae
 			//Return false if triangle is not visible (cull mode check)
 			float dotProduct{ ray.direction * triangle.normal };
 #if defined(IGNOREHITRECORD_SEPERATE)
-			switch (triangle.cullMode)
+			TriangleCullMode culling{ triangle.cullMode };
 #else
 			TriangleCullMode culling{ (ignoreHitRecord) ? TriangleCullMode((int)triangle.cullMode * -1) : triangle.cullMode };
-			switch (culling)
 #endif
+			switch (culling)
 			{
 			case TriangleCullMode::FrontFaceCulling:
 				if (dotProduct <= 0.f) return false;

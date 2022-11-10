@@ -182,20 +182,6 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float multiply, c
 					* mat->Shade(closestHit, invLightDirection, -rayDirection);
 				break;
 			}
-			/*switch (m_CurrentLightingMode)
-			{
-			case Renderer::LightingMode::ObservedArea:
-				finalColor += ObservedArea(pScene, light, closestHit);
-
-			case Renderer::LightingMode::Radiance:
-				finalColor += Radiance(pScene, light, closestHit);
-
-			case Renderer::LightingMode::BRDF:
-				finalColor += BRDF(pScene, light, closestHit, mat, rayDirection);
-
-			case Renderer::LightingMode::Combined:
-				finalColor += Combined(pScene, light, closestHit, mat, rayDirection);
-			}*/
 #else
 			//Light direction
 			Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
@@ -324,62 +310,4 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
-}
-
-ColorRGB Renderer::ObservedArea(const Scene* pScene, const Light& light, const HitRecord& closestHit) const
-{
-	//Light direction
-	Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
-	float distance = invLightDirection.Normalize();
-
-	//Observed area (lambert cosine law)
-	float dotProduct = closestHit.normal * invLightDirection;
-	if (dotProduct < 0.f) return{};
-
-	//Shawdow
-	Ray invLightRay = { closestHit.origin, invLightDirection, 0.001f, distance };
-	if (m_ShadowsEnabled && pScene->DoesHit(invLightRay)) return{};
-
-	return {dotProduct, dotProduct, dotProduct};
-}
-ColorRGB Renderer::Radiance(const Scene* pScene, const Light& light, const HitRecord& closestHit) const
-{
-	//Light direction
-	Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
-	float distance = invLightDirection.Normalize();
-
-	//Shawdow
-	Ray invLightRay = { closestHit.origin, invLightDirection, 0.001f, distance };
-	if (m_ShadowsEnabled && pScene->DoesHit(invLightRay)) return{};
-
-	return LightUtils::GetRadiance(light, closestHit.origin);
-}
-ColorRGB Renderer::BRDF(const Scene* pScene, const Light& light, const HitRecord& closestHit, Material* const mat, const Vector3& rayDirection) const
-{
-	//Light direction
-	Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
-	float distance = invLightDirection.Normalize();
-
-	//Shawdow
-	Ray invLightRay = { closestHit.origin, invLightDirection, 0.001f, distance };
-	if (m_ShadowsEnabled && pScene->DoesHit(invLightRay)) return{};
-
-	return mat->Shade(closestHit, invLightDirection, -rayDirection);
-}
-ColorRGB Renderer::Combined(const Scene* pScene, const Light& light, const HitRecord& closestHit, Material* const mat, const Vector3& rayDirection) const
-{
-	//Light direction
-	Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
-	float distance = invLightDirection.Normalize();
-
-	//Observed area (lambert cosine law)
-	float dotProduct = closestHit.normal * invLightDirection;
-	if (dotProduct < 0.f) return{};
-
-	//Shawdow
-	Ray invLightRay = { closestHit.origin, invLightDirection, 0.001f, distance };
-	if (m_ShadowsEnabled && pScene->DoesHit(invLightRay)) return{};
-
-	return LightUtils::GetRadiance(light, closestHit.origin) * dotProduct
-		* mat->Shade(closestHit, invLightDirection, -rayDirection);
 }

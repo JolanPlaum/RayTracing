@@ -11,9 +11,6 @@ namespace dae
 	class Scene;
 	struct Camera;
 	struct Light;
-	struct HitRecord;
-	struct ColorRGB;
-	struct Vector3;
 	class Material;
 
 	class Renderer final
@@ -59,10 +56,5 @@ namespace dae
 
 		LightingMode m_CurrentLightingMode{ LightingMode::Combined };
 		bool m_ShadowsEnabled{ true };
-
-		ColorRGB ObservedArea(const Scene* pScene, const Light& light, const HitRecord& closestHit) const;
-		ColorRGB Radiance(const Scene* pScene, const Light& light, const HitRecord& closestHit) const;
-		ColorRGB BRDF(const Scene* pScene, const Light& light, const HitRecord& closestHit, Material* const mat, const Vector3& rayDirection) const;
-		ColorRGB Combined(const Scene* pScene, const Light& light, const HitRecord& closestHit, Material* const mat, const Vector3& rayDirection) const;
 	};
 }
