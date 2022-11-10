@@ -16,7 +16,9 @@ using namespace dae;
 
 //#define ASYNC
 #define PARALLEL_FOR
+
 //#define RENDERPIXEL_PPT_EXAMPLE
+#define LIGHTING_MODE_CYCLING
 
 
 Renderer::Renderer(SDL_Window * pWindow) :
@@ -33,6 +35,7 @@ Renderer::Renderer(SDL_Window * pWindow) :
 
 void Renderer::Render(Scene* pScene) const
 {
+	//Local variables
 	Camera& camera = pScene->GetCamera();
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
@@ -46,6 +49,8 @@ void Renderer::Render(Scene* pScene) const
 	float multiply{ 2.f * camera.fov / (float)m_Height };
 #endif
 
+
+	//Render Pixel implementation
 #if defined(ASYNC)
 	//Async Logic
 	const uint32_t nrCores = std::thread::hardware_concurrency();
@@ -64,15 +69,15 @@ void Renderer::Render(Scene* pScene) const
 		}
 
 		async_futures.push_back(std::async(std::launch::async, [=, this] {
-			//Render all pizels for this task (currPixelIndex > currPixelIndex + taskSize)
+			//Render all pixels for this task (currPixelIndex > currPixelIndex + taskSize)
 			const uint32_t pixelIndexEnd = currPixelIndex + taskSize;
 			for (uint32_t pixelIndex{ currPixelIndex }; pixelIndex < pixelIndexEnd; ++pixelIndex)
 			{
-#if defined(RENDERPIXEL_EXAMPLE)
+			#if defined(RENDERPIXEL_PPT_EXAMPLE)
 				RenderPixel(pScene, pixelIndex, fov, aspectRatio, camera, lights, materials);
-#else
+			#else
 				RenderPixel(pScene, pixelIndex, multiply, camera, lights, materials);
-#endif
+			#endif
 			}
 			}));
 
@@ -86,24 +91,26 @@ void Renderer::Render(Scene* pScene) const
 	}
 #elif defined(PARALLEL_FOR)
 	//Parellel-For Logic
-	concurrency::parallel_for(0u, nrPixels, [=, this](int i) {
-#if defined(RENDERPIXEL_PPT_EXAMPLE)
-		RenderPixel(pScene, i, fov, aspectRatio, camera, lights, materials);
-#else
-		RenderPixel(pScene, i, multiply, camera, lights, materials);
-#endif
+	concurrency::parallel_for(0u, nrPixels, [=, this](int i)
+		{
+		#if defined(RENDERPIXEL_PPT_EXAMPLE)
+			RenderPixel(pScene, i, fov, aspectRatio, camera, lights, materials);
+		#else
+			RenderPixel(pScene, i, multiply, camera, lights, materials);
+		#endif
 		});
 #else
 	//Synchronous Logic (no threading)
 	for (uint32_t i{ 0 }; i < nrPixels; ++i)
 	{
-#if defined(RENDERPIXEL_EXAMPLE)
+	#if defined(RENDERPIXEL_PPT_EXAMPLE)
 		RenderPixel(pScene, i, fov, aspectRatio, camera, lights, materials);
-#else
+	#else
 		RenderPixel(pScene, i, multiply, camera, lights, materials);
-#endif
+	#endif
 	}
 #endif
+
 
 	//@END
 	//Update SDL Surface
@@ -141,22 +148,7 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float multiply, c
 
 		for (const Light& light : lights)
 		{
-			/*switch (m_CurrentLightingMode)
-			{
-			case Renderer::LightingMode::ObservedArea:
-				finalColor += ObservedArea(pScene, light, closestHit);
-
-			case Renderer::LightingMode::Radiance:
-				finalColor += Radiance(pScene, light, closestHit);
-
-			case Renderer::LightingMode::BRDF:
-				finalColor += BRDF(pScene, light, closestHit, mat, rayDirection);
-
-			case Renderer::LightingMode::Combined:
-				finalColor += Combined(pScene, light, closestHit, mat, rayDirection);
-			}*/
-			
-			
+#if defined(LIGHTING_MODE_CYCLING)
 			//Light direction
 			Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
 			float distance = invLightDirection.Normalize();
@@ -190,7 +182,37 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float multiply, c
 					* mat->Shade(closestHit, invLightDirection, -rayDirection);
 				break;
 			}
-			
+			/*switch (m_CurrentLightingMode)
+			{
+			case Renderer::LightingMode::ObservedArea:
+				finalColor += ObservedArea(pScene, light, closestHit);
+
+			case Renderer::LightingMode::Radiance:
+				finalColor += Radiance(pScene, light, closestHit);
+
+			case Renderer::LightingMode::BRDF:
+				finalColor += BRDF(pScene, light, closestHit, mat, rayDirection);
+
+			case Renderer::LightingMode::Combined:
+				finalColor += Combined(pScene, light, closestHit, mat, rayDirection);
+			}*/
+#else
+			//Light direction
+			Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
+			float distance = invLightDirection.Normalize();
+
+			//Observed area (lambert cosine law)
+			float dotProduct = closestHit.normal * invLightDirection;
+			if (dotProduct < 0.f) continue;
+
+			//Shawdow
+			Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };
+			if (m_ShadowsEnabled && pScene->DoesHit(invLightRay)) continue;
+
+			//Lighting equation
+			finalColor += LightUtils::GetRadiance(light, closestHit.origin) * dotProduct
+				* mat->Shade(closestHit, invLightDirection, -rayDirection);
+#endif
 		}
 	}
 
@@ -236,6 +258,7 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 
 		for (const Light& light : lights)
 		{
+#if defined(LIGHTING_MODE_CYCLING)
 			//Light direction
 			Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
 			float distance = invLightDirection.Normalize();
@@ -269,7 +292,23 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 					* mat->Shade(closestHit, invLightDirection, -rayDirection);
 				break;
 			}
+#else
+			//Light direction
+			Vector3 invLightDirection = LightUtils::GetDirectionToLight(light, closestHit.origin);
+			float distance = invLightDirection.Normalize();
 
+			//Observed area (lambert cosine law)
+			float dotProduct = closestHit.normal * invLightDirection;
+			if (dotProduct < 0.f) continue;
+
+			//Shawdow
+			Ray invLightRay{ closestHit.origin, invLightDirection, 0.001f, distance };
+			if (m_ShadowsEnabled && pScene->DoesHit(invLightRay)) continue;
+
+			//Lighting equation
+			finalColor += LightUtils::GetRadiance(light, closestHit.origin) * dotProduct
+				* mat->Shade(closestHit, invLightDirection, -rayDirection);
+#endif
 		}
 	}
 
