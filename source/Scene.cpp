@@ -518,7 +518,7 @@ namespace dae {
 		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue); //LEFT
 
 		//Triangle Mesh
-		const unsigned char matId_RubiksCube = matLambert_White;
+		const unsigned char matId_RubiksCube = matCT_GrayMediumMetal;
 		int nrCorners{ 8 }, nrSides{ 12 }, nrMiddles{ 6 };
 		for (int i{ 0 }; i < nrCorners; ++i)
 		{
